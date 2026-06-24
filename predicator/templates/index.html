@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Somali Face Recognition System</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f3f4f6;
+            margin: 0;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #1e3a8a;
+            margin-bottom: 5px;
+        }
+        .subtitle {
+            color: #4b5563;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        .upload-card {
+            background: white;
+            width: 100%;
+            max-width: 850px;
+            padding: 20px 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
+            box-sizing: border-box;
+        }
+        .upload-form {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .upload-controls {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        input[type="file"] {
+            color: #374151;
+            font-size: 14px;
+        }
+        input[type="file"]::file-selector-button {
+            background-color: #eff6ff;
+            color: #1e40af;
+            border: 1px solid #bfdbfe;
+            border-radius: 6px;
+            padding: 10px 16px;
+            margin-right: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s, border-color 0.2s;
+        }
+        input[type="file"]::file-selector-button:hover {
+            background-color: #dbeafe;
+            border-color: #93c5fd;
+        }
+        .btn-secondary {
+            background-color: #eff6ff;
+            color: #1e40af;
+            padding: 11px 18px;
+            border: 1px solid #bfdbfe;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s, border-color 0.2s;
+        }
+        .btn-secondary:hover {
+            background-color: #dbeafe;
+            border-color: #93c5fd;
+        }
+        .btn-light-danger {
+            background-color: #f8fafc;
+            color: #475569;
+            border-color: #cbd5e1;
+        }
+        .btn-light-danger:hover {
+            background-color: #e2e8f0;
+            border-color: #94a3b8;
+        }
+        .btn-predict {
+            background-color: #1e40af;
+            color: white;
+            padding: 12px 28px;
+            border: none;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-predict:hover {
+            background-color: #1d4ed8;
+        }
+        .camera-panel {
+            display: none;
+            margin-top: 18px;
+            border: 1px solid #dbeafe;
+            border-radius: 10px;
+            background: #f8fbff;
+            padding: 16px;
+        }
+        .camera-panel.is-open {
+            display: block;
+        }
+        .camera-view {
+            width: 100%;
+            max-height: 360px;
+            background: #0f172a;
+            border-radius: 8px;
+            object-fit: cover;
+            display: block;
+        }
+        .camera-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 12px;
+        }
+        .camera-status {
+            color: #64748b;
+            font-size: 13px;
+            margin-top: 10px;
+        }
+        .camera-preview {
+            display: none;
+            margin-top: 16px;
+        }
+        .camera-preview.is-visible {
+            display: block;
+        }
+        .camera-preview-label {
+            color: #1e3a8a;
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .camera-preview img {
+            width: 100%;
+            max-height: 300px;
+            border-radius: 8px;
+            object-fit: contain;
+            background: white;
+            border: 1px solid #e5e7eb;
+        }
+        /* Double-panel split layout block matching your drawn framework sketch */
+        .split-layout-panel {
+            display: flex;
+            background: white;
+            border-radius: 14px;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 850px;
+            min-height: 420px;
+            overflow: hidden;
+        }
+        /* Left Panel - Image Viewer space */
+        .panel-left-view {
+            flex: 1;
+            background-color: #f9fafb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            border-right: 1px solid #e5e7eb;
+        }
+        .panel-left-view img {
+            max-width: 100%;
+            max-height: 380px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            object-fit: cover;
+        }
+        .fallback-text {
+            color: #9ca3af;
+            font-size: 15px;
+            font-style: italic;
+        }
+        /* Right Panel - Structural Text Space */
+        .panel-right-details {
+            flex: 1;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+        .data-header {
+            font-size: 12px;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            color: #9ca3af;
+            margin-bottom: 6px;
+        }
+        .celebrity-name {
+            font-size: 32px;
+            color: #111827;
+            margin: 0 0 25px 0;
+            font-weight: 800;
+            line-height: 1.2;
+        }
+        .celebrity-desc {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #374151;
+            margin: 0;
+        }
+        .confidence-badge {
+            margin-top: auto;
+            align-self: flex-start;
+            background-color: #dbeafe;
+            color: #1e40af;
+            padding: 8px 16px;
+            font-size: 14px;
+            font-weight: 700;
+            border-radius: 30px;
+        }
+        .alert-error {
+            background-color: #fef2f2;
+            color: #991b1b;
+            padding: 15px 20px;
+            border-radius: 8px;
+            max-width: 850px;
+            width: 100%;
+            margin-bottom: 20px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+        @media (max-width: 700px) {
+            body {
+                padding: 18px;
+            }
+            .upload-card {
+                padding: 18px;
+            }
+            .upload-form,
+            .upload-controls {
+                align-items: stretch;
+                flex-direction: column;
+                width: 100%;
+            }
+            .btn-predict,
+            .btn-secondary {
+                width: 100%;
+            }
+            .split-layout-panel {
+                flex-direction: column;
+            }
+            .panel-left-view {
+                border-right: none;
+                border-bottom: 1px solid #e5e7eb;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Somali Celebrity Face Identification System</h1>
+    <div class="subtitle">MTCNN Face Detection • FaceNet Embedding Engine • rbf SVM Classifier</div>
+
+    {% if error %}
+    <div class="alert-error">
+        <strong>Classification Interrupted:</strong> {{ error }}
+    </div>
+    {% endif %}
+
+    <div class="upload-card">
+        <form method="post" enctype="multipart/form-data" class="upload-form" id="analysisForm">
+            {% csrf_token %}
+            <div class="upload-controls">
+                <input type="file" name="celebrity_image" id="celebrityImageInput" accept="image/*" required>
+                <button type="button" class="btn-secondary" id="startCameraButton">Start Camera</button>
+            </div>
+            <button type="submit" class="btn-predict">Analyze Profile Box</button>
+        </form>
+
+        <div class="camera-panel" id="cameraPanel" aria-live="polite">
+            <video class="camera-view" id="cameraView" autoplay playsinline muted></video>
+            <div class="camera-actions">
+                <button type="button" class="btn-secondary" id="capturePhotoButton">Capture Photo</button>
+                <button type="button" class="btn-secondary btn-light-danger" id="closeCameraButton">Close Camera</button>
+            </div>
+            <div class="camera-status" id="cameraStatus">Camera ready.</div>
+            <div class="camera-preview" id="cameraPreview">
+                <div class="camera-preview-label">Captured image preview</div>
+                <img id="capturedPreviewImage" alt="Captured camera preview">
+            </div>
+            <canvas id="cameraCanvas" hidden></canvas>
+        </div>
+    </div>
+
+    <div class="split-layout-panel">
+        
+        <div class="panel-left-view">
+            {% if image_url %}
+                <img src="{{ image_url }}" alt="Target Celebrity Face View">
+            {% else %}
+                <div class="fallback-text">Awaiting source image upload...</div>
+            {% endif %}
+        </div>
+        
+        <div class="panel-right-details">
+            {% if name %}
+                <div class="data-header">Class Identity Output</div>
+                <h2 class="celebrity-name">{{ name }}</h2>
+                
+                <div class="data-header" style="margin-top: 10px;">Biographical Record Summary</div>
+                <p class="celebrity-desc">{{ description }}</p>
+                
+                <div class="confidence-badge">
+                    Model Accuracy Probability: {{ confidence }}
+                </div>
+            {% else %}
+                <div class="fallback-text" style="margin: auto;">System idle. Upload an image to trigger classification logs.</div>
+            {% endif %}
+        </div>
+
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('celebrityImageInput');
+        const startCameraButton = document.getElementById('startCameraButton');
+        const capturePhotoButton = document.getElementById('capturePhotoButton');
+        const closeCameraButton = document.getElementById('closeCameraButton');
+        const cameraPanel = document.getElementById('cameraPanel');
+        const cameraView = document.getElementById('cameraView');
+        const cameraCanvas = document.getElementById('cameraCanvas');
+        const cameraStatus = document.getElementById('cameraStatus');
+        const cameraPreview = document.getElementById('cameraPreview');
+        const capturedPreviewImage = document.getElementById('capturedPreviewImage');
+
+        let cameraStream = null;
+
+        function setCameraStatus(message) {
+            cameraStatus.textContent = message;
+        }
+
+        function stopCamera() {
+            if (cameraStream) {
+                cameraStream.getTracks().forEach(track => track.stop());
+                cameraStream = null;
+            }
+            cameraView.srcObject = null;
+            cameraPanel.classList.remove('is-open');
+        }
+
+        async function startCamera() {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                cameraPanel.classList.add('is-open');
+                setCameraStatus('Camera access is not available in this browser.');
+                return;
+            }
+
+            try {
+                cameraStream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'user' },
+                    audio: false
+                });
+                cameraView.srcObject = cameraStream;
+                cameraPanel.classList.add('is-open');
+                setCameraStatus('Camera is live. Capture a photo when ready.');
+            } catch (error) {
+                cameraPanel.classList.add('is-open');
+                setCameraStatus('Camera permission was denied or no camera was found.');
+            }
+        }
+
+        function assignCapturedImage(blob) {
+            if (!blob || blob.size === 0) {
+                setCameraStatus('Captured image was empty. Please try again.');
+                return false;
+            }
+
+            const capturedFile = new File([blob], 'camera-capture.jpg', {
+                type: blob.type || 'image/jpeg'
+            });
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(capturedFile);
+            fileInput.files = dataTransfer.files;
+            return fileInput.files.length === 1 && fileInput.files[0].size > 0;
+        }
+
+        function capturePhoto() {
+            if (!cameraStream || !cameraView.videoWidth || !cameraView.videoHeight) {
+                setCameraStatus('Start the camera before capturing a photo.');
+                return;
+            }
+
+            cameraCanvas.width = cameraView.videoWidth;
+            cameraCanvas.height = cameraView.videoHeight;
+            const context = cameraCanvas.getContext('2d');
+            context.drawImage(cameraView, 0, 0, cameraCanvas.width, cameraCanvas.height);
+
+            cameraCanvas.toBlob(blob => {
+                if (!blob) {
+                    setCameraStatus('Could not capture this frame. Please try again.');
+                    return;
+                }
+
+                if (!assignCapturedImage(blob)) {
+                    return;
+                }
+
+                capturedPreviewImage.src = URL.createObjectURL(blob);
+                cameraPreview.classList.add('is-visible');
+                setCameraStatus(`Photo captured (${Math.round(blob.size / 1024)} KB). Click Analyze Profile Box to send it.`);
+            }, 'image/jpeg', 0.92);
+        }
+
+        startCameraButton.addEventListener('click', startCamera);
+        capturePhotoButton.addEventListener('click', capturePhoto);
+        closeCameraButton.addEventListener('click', stopCamera);
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length > 0) {
+                cameraPreview.classList.remove('is-visible');
+                setCameraStatus('Selected file is ready for analysis.');
+            }
+        });
+        window.addEventListener('beforeunload', stopCamera);
+    </script>
+
+</body>
+</html>
